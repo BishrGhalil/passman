@@ -2,9 +2,7 @@
 from cryptography.fernet import Fernet
 import getpass
 import os
-import time
 import sqlite3
-from sqlite3 import Error
 
 clear = lambda: os.system('clear')
 
@@ -33,10 +31,10 @@ def conn():
                                 );""")
         conn.commit()
         conn.close()
-    except Error as e:
+    except sqlite3.Error as e:
         print(e)
 
-# Add a password to the database
+# Check if a service exist
 def CheckService(service):
     conn = sqlite3.connect('/home/bishr/database/pass.db')
     cur = conn.cursor()
@@ -47,6 +45,7 @@ def CheckService(service):
     else:
         return False
 
+# Add a password to the database
 def AddPass(service, username, passwd):
     conn = sqlite3.connect('/home/bishr/database/pass.db')
     cur = conn.cursor()
@@ -63,6 +62,7 @@ def GetPass(service):
     passwd = cur.fetchall()
     conn.close()
     return passwd
+
 # Get a site's username from the database
 def GetUser(service):
     conn = sqlite3.connect('/home/bishr/database/pass.db')
@@ -72,6 +72,7 @@ def GetUser(service):
     conn.close()
     return username
 
+# Get all saved passwords
 def GetAll():
     conn = sqlite3.connect('/home/bishr/database/pass.db')
     cur = conn.cursor()
@@ -80,7 +81,7 @@ def GetAll():
     conn.close()
     return data
 
-# Delete a service
+# Delete a password
 def Del(service):
     conn = sqlite3.connect('/home/bishr/database/pass.db')
     cur = conn.cursor()
@@ -88,7 +89,7 @@ def Del(service):
     conn.commit()
     print(bcolors.FAIL + f"{service} Deleted." + bcolors.ENDC)
 
-# encypt a string
+# Encypt a string
 def encr(message):
     # Instance the Fernet class with the key
     fernet = Fernet(b'D5-Xm4A4x9copCmwcp6MMcLAnOIgQJVDFmDJmkQYvT4=')
@@ -96,11 +97,13 @@ def encr(message):
     decMessage = fernet.decrypt(encMessage).decode()
     return encMessage
 
+# Decrypt a string
 def dencr(encstring):
     fernet = Fernet(b'D5-Xm4A4x9copCmwcp6MMcLAnOIgQJVDFmDJmkQYvT4=')
     decstring = fernet.decrypt(encstring).decode()
     return decstring
 
+# Menu options
 def Menu():
     menu = input("Chose an option"
             "\n1- Enter a new password"
@@ -111,7 +114,7 @@ def Menu():
             "\n: ")
     return menu
 
-
+# Print all saved passwords
 def printall():
     data = GetAll()
     r = 1
@@ -125,6 +128,7 @@ Password: {password}
                     """)
         r += 1
 
+# Main function
 def main():
     try:
         print(bcolors.BOLD + f"Hello {getpass.getuser()}." + bcolors.ENDC)
@@ -198,9 +202,10 @@ def main():
                 print(bcolors.WARNING + "Not a valid command ):" + bcolors.ENDC)
                 print("-"* 15)
     except KeyboardInterrupt:
-        print(bcolors.WARNING + "Exiting..." + bcolors.ENDC)
+        print(bcolors.WARNING + "\nExiting..." + bcolors.ENDC)
     except Exception as e:
         print(bcolors.WARNING + str(e) + bcolors.ENDC)
+
 if __name__=="__main__":
     main()
 
