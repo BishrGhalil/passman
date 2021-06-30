@@ -3,6 +3,7 @@ from cryptography.fernet import Fernet
 import getpass
 import os
 import sqlite3
+import random, string
 
 clear = lambda: os.system('clear')
 
@@ -110,7 +111,8 @@ def Menu():
             "\n2- Search a password"
             "\n3- View all passwords"
             "\n4- Delete a password"
-            "\n5- Exit"
+            "\n5- Make a random password"
+            "\n6- Exit"
             "\n: ")
     return menu
 
@@ -127,18 +129,43 @@ Username: {username}
 Password: {password}
                     """)
         r += 1
+# Random password
+def genman(pass_len, password_string):
+    password = ''
+    for x in range (0,4):
+        Password = random.choice(string.ascii_uppercase) + random.choice(string.ascii_lowercase) + random.choice(string.digits) + random.choice(string.punctuation)
+    for y in range(pass_len - 4):
+        password = password + random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits + string.punctuation)
+
+    password = password + password_string
+    return password
 
 # Main function
 def main():
     try:
+        key = "b'D5-Xm4A4x9copCmwcp6MMcLAnOIgQJVDFmDJmkQYvT4='"
         print(bcolors.BOLD + f"Hello {getpass.getuser()}." + bcolors.ENDC)
-        masterpasswd = "bmj2002"
+        if not CheckService("masterpasswd"):
+            print("""It is your first time in the passman (:
+Let us get you a master password,
+This is the only password you should remember, and I'll do the other stuff for you.""")
+            masterpasswd = input(bcolors.GREEN + "Enter a password to use it as a master password: " + bcolors.ENDC)
+            connct = sqlite3.connect('/home/bishr/database/pass.db')
+            cur = connct.cursor()
+            datatuple = ("masterpasswd", "masterpasswd", masterpasswd)
+            cur.execute(f"""INSERT INTO passwds (SERVICE, USERNAME, PASSWD) VALUES (?,?,?);""",datatuple)
+            connct.commit()
+            connct.close()
+        elif CheckService("masterpasswd"):
+            masterpasswd = GetPass("masterpasswd")
+            masterpasswd = masterpasswd[0][0]
+        else:
+            print("Error with the master password ):")
         ans = ""
         while ans != masterpasswd:
             ans = getpass.getpass("Master password: ")
         conn()
         menu = ""
-        key = "b'D5-Xm4A4x9copCmwcp6MMcLAnOIgQJVDFmDJmkQYvT4='"
         clear()
 
 
@@ -192,8 +219,15 @@ def main():
                 elif not CheckService(serviceName):
                     print("Service doesn't exist.\n")
                     continue
+            elif menu == "5" or menu == "make":
+                passwd_string =  input("Enter a string  to use it in the password: ")
+                passwd_len = int(input("Enter the length of the password: "))
+                passwd = genman(passwd_len, passwd_string)
+                print("Password:")
+                print(bcolors.GREEN + passwd + bcolors.ENDC + "\n")
 
-            elif menu == "5" or menu == "exit":
+
+            elif menu == "6" or menu == "exit":
                 print("\nGood bye.")
                 exit()
             elif menu == "clear":
