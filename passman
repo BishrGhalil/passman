@@ -4,8 +4,11 @@ import getpass
 import os
 import sqlite3
 import random, string
+import time
 
 clear = lambda: os.system('clear')
+TOKEN = bytes(b'D5-Xm4A4x9copCmwcp6MMcLAnOIgQJVDFmDJmkQYvT4=')
+DATA_BASE_PATH = rf'/home/{getpass.getuser()}/database/pass.db'
 
 # Colors
 class bcolors:
@@ -14,7 +17,7 @@ class bcolors:
     CYAN = '\033[96m'
     GREEN = '\033[92m'
     WARNING = '\033[93m'
-    FAIL = '\033[91m'
+    RED = '\033[91m'
     ENDC = '\033[0m'
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
@@ -22,7 +25,7 @@ class bcolors:
 # Creat a database if doesn't exist and connect to the database if exist
 def conn():
     try:
-        conn = sqlite3.connect(f'/home/{getpass.getuser()}/database/pass.db')
+        conn = sqlite3.connect(DATA_BASE_PATH)
         cur = conn.cursor()
         cur.execute("""CREATE TABLE IF NOT EXISTS passwds(
                                     ID integer PRIMARY KEY AUTOINCREMENT,
@@ -37,7 +40,7 @@ def conn():
 
 # Check if a service exist
 def CheckService(service):
-    conn = sqlite3.connect('/home/bishr/database/pass.db')
+    conn = sqlite3.connect(DATA_BASE_PATH)
     cur = conn.cursor()
     cur.execute("SELECT ID FROM passwds WHERE SERVICE = ?", (service,))
     data = cur.fetchall()
@@ -48,7 +51,7 @@ def CheckService(service):
 
 # Add a password to the database
 def AddPass(service, username, passwd):
-    conn = sqlite3.connect('/home/bishr/database/pass.db')
+    conn = sqlite3.connect(DATA_BASE_PATH)
     cur = conn.cursor()
     datatuple = (service, username, passwd)
     cur.execute(f"""INSERT INTO passwds (SERVICE, USERNAME, PASSWD) VALUES (?,?,?);""",datatuple)
@@ -57,7 +60,7 @@ def AddPass(service, username, passwd):
 
 # Get a site's password from the database
 def GetPass(service):
-    conn = sqlite3.connect('/home/bishr/database/pass.db')
+    conn = sqlite3.connect(DATA_BASE_PATH)
     cur = conn.cursor()
     cur.execute("SELECT PASSWD from passwds WHERE SERVICE=?", (service, ))
     passwd = cur.fetchall()
@@ -66,16 +69,16 @@ def GetPass(service):
 
 # Get a site's username from the database
 def GetUser(service):
-    conn = sqlite3.connect('/home/bishr/database/pass.db')
+    conn = sqlite3.connect(DATA_BASE_PATH)
     cur = conn.cursor()
     cur.execute("SELECT USERNAME from passwds WHERE SERVICE=?", (service, ))
     username = cur.fetchall()
     conn.close()
     return username
 
-# Get all saved passwords
+# Get all saved password
 def GetAll():
-    conn = sqlite3.connect('/home/bishr/database/pass.db')
+    conn = sqlite3.connect(DATA_BASE_PATH)
     cur = conn.cursor()
     cur.execute(""" SELECT * from passwds""")
     data = cur.fetchall()
@@ -84,50 +87,56 @@ def GetAll():
 
 # Delete a password
 def Del(service):
-    conn = sqlite3.connect('/home/bishr/database/pass.db')
+    conn = sqlite3.connect(DATA_BASE_PATH)
     cur = conn.cursor()
     cur.execute("DELETE FROM passwds WHERE SERVICE=?", (service,))
     conn.commit()
-    print(bcolors.FAIL + f"{service} Deleted." + bcolors.ENDC)
+    print(bcolors.RED + f"{service} Deleted." + bcolors.ENDC)
 
 # Encypt a string
 def encr(message):
     # Instance the Fernet class with the key
-    fernet = Fernet(b'D5-Xm4A4x9copCmwcp6MMcLAnOIgQJVDFmDJmkQYvT4=')
+    fernet = Fernet(TOKEN)
     encMessage = fernet.encrypt(message.encode())
     decMessage = fernet.decrypt(encMessage).decode()
     return encMessage
 
 # Decrypt a string
 def dencr(encstring):
-    fernet = Fernet(b'D5-Xm4A4x9copCmwcp6MMcLAnOIgQJVDFmDJmkQYvT4=')
+    fernet = Fernet(TOKEN)
     decstring = fernet.decrypt(encstring).decode()
     return decstring
 
 # Menu options
 def Menu():
-    menu = input("Chose an option"
-            "\n1- Enter a new password"
-            "\n2- Search a password"
-            "\n3- View all passwords"
-            "\n4- Delete a password"
-            "\n5- Make a random password"
-            "\n6- Exit"
-            "\n: ")
+    print(bcolors.BOLD + "Chose an option" + bcolors.ENDC)
+    print("""\t1- Enter a new password
+        2- Search a password"
+        3- View all passwords"
+        4- Delete a password"
+        5- Make a random password""")
+    print(bcolors.RED + "\t6- Exit" + bcolors.ENDC)
+    menu = input(": ")
     return menu
 
 # Print all saved passwords
 def printall():
-    data = GetAll()
-    r = 1
-    for i in data:
+    clear()
+    conn = sqlite3.connect(DATA_BASE_PATH)
+    cur = conn.cursor()
+    cur.execute(""" SELECT * from passwds""")
+    data = cur.fetchall()
+    conn.close()
+    for r, i in enumerate(data):
+        if i[2] == 'masterpasswd' or i[3]=='masterpasswd':
+            continue
         username = dencr(i[2])
         password = dencr(i[3])
-        print(f"""{r}-
-Service: {i[1]}
-Username: {username}
-Password: {password}
-                    """)
+        randColor = random.choice([bcolors.GREEN, bcolors.BLUE, bcolors.CYAN, bcolors.WARNING])
+        print(f"{r}:")
+        print("-"*45)
+        print(randColor + "| Service:\v" + bcolors.ENDC + f"{i[1]}" + randColor + "\n| Username:\v" + bcolors.ENDC + f"{username}" + randColor + "\n| Password:\v" + bcolors.ENDC + f"{password}")
+        print("-"*45)
         r += 1
 # Random password
 def genman(pass_len, password_string):
@@ -143,14 +152,13 @@ def genman(pass_len, password_string):
 # Main function
 def main():
     try:
-        key = "b'D5-Xm4A4x9copCmwcp6MMcLAnOIgQJVDFmDJmkQYvT4='"
         print(bcolors.BOLD + f"Hello {getpass.getuser()}." + bcolors.ENDC)
         if not CheckService("masterpasswd"):
             print("""It is your first time in the passman (:
 Let us get you a master password,
 This is the only password you should remember, and I'll do the other stuff for you.""")
             masterpasswd = input(bcolors.GREEN + "Enter a password to use it as a master password: " + bcolors.ENDC)
-            connct = sqlite3.connect('/home/bishr/database/pass.db')
+            connct = sqlite3.connect(DATA_BASE_PATH)
             cur = connct.cursor()
             datatuple = ("masterpasswd", "masterpasswd", masterpasswd)
             cur.execute(f"""INSERT INTO passwds (SERVICE, USERNAME, PASSWD) VALUES (?,?,?);""",datatuple)
@@ -232,6 +240,8 @@ This is the only password you should remember, and I'll do the other stuff for y
                 exit()
             elif menu == "clear":
                 clear()
+            elif menu.lower() in ['hi', 'hillo', 'hey']:
+                print(bcolors.GREEN + "Hey there!, I'm using Passman :D" + bcolors.ENDC)
             else :
                 print(bcolors.WARNING + "Not a valid command ):" + bcolors.ENDC)
                 print("-"* 15)
