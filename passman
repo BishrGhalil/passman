@@ -7,7 +7,7 @@ import random, string
 import time
 
 clear = lambda: os.system('clear')
-TOKEN = bytes(b'D5-Xm4A4x9copCmwcp6MMcLAnOIgQJVDFmDJmkQYvT4=')
+TOKEN = b'D5-Xm4A4x9copCmwcp6MMcLAnOIgQJVDFmDJmkQYvT4='
 DATA_BASE_PATH = rf'/home/{getpass.getuser()}/database/pass.db'
 
 # Colors
@@ -182,11 +182,20 @@ This is the only password you should remember, and I'll do the other stuff for y
             if menu == "1" or menu == "add":
                 clear()
                 serviceName = input("Enter the name of your service: ")
+                if serviceName == "back":
+                    continue
                 if CheckService(serviceName):
                     print(bcolors.WARNING + "Service exist.\n" + bcolors.ENDC)
                     continue
                 username = input("Enter your username for this service: ")
+                if username == "back":
+                    clear()
+                    continue
+
                 password = getpass.getpass("Enter a password for this service: ")
+                if password == 'back':
+                    clear()
+                    continue
                 confirm  = getpass.getpass("Confirm your password: ")
                 if not password == confirm:
                     print(bcolors.WARNING + "Doesn't match, Please try again.\n" + bcolors.ENDC)
@@ -201,6 +210,9 @@ This is the only password you should remember, and I'll do the other stuff for y
             elif menu == "2" or menu == "search":
                 clear()
                 serviceName = input("Enter service Name: ")
+                if serviceName == "back":
+                    continue
+
                 if not CheckService(serviceName):
                     print(bcolors.WARNING + "Service doesn't exist.\n" + bcolors.ENDC)
                     continue
@@ -222,6 +234,10 @@ This is the only password you should remember, and I'll do the other stuff for y
                 print("-"*15)
 
                 serviceName = input("Enter service name to delete: ")
+                if serviceName == 'back':
+                    print(bcolors.WARNING + "Service doesn't exist.\n" + bcolors.ENDC)
+                    continue
+
                 if CheckService(serviceName):
                     Del(serviceName)
                 elif not CheckService(serviceName):
@@ -229,7 +245,13 @@ This is the only password you should remember, and I'll do the other stuff for y
                     continue
             elif menu == "5" or menu == "make":
                 passwd_string =  input("Enter a string  to use it in the password: ")
+                if passwd_string == "back":
+                    clear()
+                    continue
                 passwd_len = int(input("Enter the length of the password: "))
+                if passwd_len == "back":
+                    clear()
+                    continue
                 passwd = genman(passwd_len, passwd_string)
                 print("Password:")
                 print(bcolors.GREEN + passwd + bcolors.ENDC + "\n")
