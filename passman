@@ -5,6 +5,7 @@ import os
 import sqlite3
 import random, string
 import time
+import pyperclip as pc
 
 clear = lambda: os.system('clear')
 TOKEN = b'D5-Xm4A4x9copCmwcp6MMcLAnOIgQJVDFmDJmkQYvT4='
@@ -223,6 +224,8 @@ This is the only password you should remember, and I'll do the other stuff for y
                 username = dencr(username)
                 print(f"Service: {serviceName}\nUsername: {username}\nPassword: {passwd}")
                 print("-" * 15)
+                pc.copy(passwd)
+                print(bcolors.GREEN + "Copied to clipboard." + bcolors.ENDC)
 
             elif menu == "3" or menu == "all":
                 printall()
