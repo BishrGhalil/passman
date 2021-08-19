@@ -6,6 +6,7 @@ import sqlite3
 import random, string
 import time
 import pyperclip as pc
+import argparse
 
 clear = lambda: os.system('clear')
 TOKEN = b'D5-Xm4A4x9copCmwcp6MMcLAnOIgQJVDFmDJmkQYvT4='
@@ -139,6 +140,26 @@ def printall():
         print(randColor + "| Service:\v" + bcolors.ENDC + f"{i[1]}" + randColor + "\n| Username:\v" + bcolors.ENDC + f"{username}" + randColor + "\n| Password:\v" + bcolors.ENDC + f"{password}")
         print("-"*45)
         r += 1
+
+
+# Check and get password for a service
+def CheckGetPass(service, hide=1):
+                if not CheckService(service):
+                    print(bcolors.WARNING + "Service doesn't exist.\n" + bcolors.ENDC)
+                    return 0
+
+                passwd = GetPass(service)[0][0]
+                passwd = dencr(passwd)
+                username = GetUser(service)[0][0]
+                username = dencr(username)
+                if not hide:
+                    print(f"Service: {service}\nUsername: {username}\nPassword: {passwd}")
+                    print("-" * 15)
+                pc.copy(passwd)
+                print(bcolors.GREEN + "Copied to clipboard." + bcolors.ENDC)
+                return 1
+
+
 # Random password
 def genman(pass_len, password_string):
     password = ''
@@ -149,6 +170,14 @@ def genman(pass_len, password_string):
 
     password = password + password_string
     return password
+
+# Init the arguments parser
+def arginit():
+        parser = argparse.ArgumentParser()
+        parser.add_argument("-s","--service", help="The service you want to get it's password.")
+        parser.add_argument("-u","--unvisable", action="store_true", help="Don't print the results to the terminal.")
+        args = parser.parse_args()
+        return args.service, args.unvisable
 
 # Main function
 def main():
@@ -174,6 +203,12 @@ This is the only password you should remember, and I'll do the other stuff for y
         while ans != masterpasswd:
             ans = getpass.getpass("Master password: ")
         conn()
+        argservice, hide = arginit()
+        if argservice:
+            if not CheckGetPass(argservice, hide):
+                exit(-1)
+            else:
+                exit(1)
         menu = ""
         clear()
 
@@ -213,19 +248,8 @@ This is the only password you should remember, and I'll do the other stuff for y
                 serviceName = input("Enter service Name: ")
                 if serviceName == "back":
                     continue
-
-                if not CheckService(serviceName):
-                    print(bcolors.WARNING + "Service doesn't exist.\n" + bcolors.ENDC)
+                if not CheckGetPass(serviceName):
                     continue
-
-                passwd = GetPass(serviceName)[0][0]
-                passwd = dencr(passwd)
-                username = GetUser(serviceName)[0][0]
-                username = dencr(username)
-                print(f"Service: {serviceName}\nUsername: {username}\nPassword: {passwd}")
-                print("-" * 15)
-                pc.copy(passwd)
-                print(bcolors.GREEN + "Copied to clipboard." + bcolors.ENDC)
 
             elif menu == "3" or menu == "all":
                 printall()
