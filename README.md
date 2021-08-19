@@ -2,10 +2,12 @@
 A simple python password manager.
 ### Dependencies
 * pyperclip
+* cryptography
+* argparse
 ### Install
 ```
-pip install pyperclip
 git clone https://github.com/BishrGhalil/passman.git
 cd passman
-sudo ln -s passman /bin/
+pip3 install -r requirements.txt
+sudo ln -s passman /bin/passman
 ```
