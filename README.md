@@ -11,3 +11,14 @@ cd passman
 pip3 install -r requirements.txt
 sudo ln -s passman /bin/passman
 ```
+
+### Usage
+You can use it to add, search, delete and generate passwords by running.
+```
+passman
+```
+You can use the command line arguments to copy a password to the clipboard by a single command.
+```
+passman -us <service-name>
+```
+See ```passman -h``` for complete help.
