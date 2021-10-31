@@ -24,6 +24,7 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
+
 # Creat a database if doesn't exist and connect to the database if exist
 def conn():
     try:
@@ -37,8 +38,10 @@ def conn():
                                 );""")
         conn.commit()
         conn.close()
+
     except sqlite3.Error as e:
         print(e)
+
 
 # Check if a service exist
 def CheckService(service):
@@ -46,10 +49,12 @@ def CheckService(service):
     cur = conn.cursor()
     cur.execute("SELECT ID FROM passwds WHERE SERVICE = ?", (service,))
     data = cur.fetchall()
+
     if len(data) >=1:
         return True
     else:
         return False
+
 
 # Add a password to the database
 def AddPass(service, username, passwd):
@@ -60,6 +65,7 @@ def AddPass(service, username, passwd):
     conn.commit()
     conn.close()
 
+
 # Get a site's password from the database
 def GetPass(service):
     conn = sqlite3.connect(DATA_BASE_PATH)
@@ -68,6 +74,7 @@ def GetPass(service):
     passwd = cur.fetchall()
     conn.close()
     return passwd
+
 
 # Get a site's username from the database
 def GetUser(service):
@@ -78,6 +85,7 @@ def GetUser(service):
     conn.close()
     return username
 
+
 # Get all saved password
 def GetAll():
     conn = sqlite3.connect(DATA_BASE_PATH)
@@ -87,6 +95,7 @@ def GetAll():
     conn.close()
     return data
 
+
 # Delete a password
 def Del(service):
     conn = sqlite3.connect(DATA_BASE_PATH)
@@ -94,6 +103,7 @@ def Del(service):
     cur.execute("DELETE FROM passwds WHERE SERVICE=?", (service,))
     conn.commit()
     print(bcolors.RED + f"{service} Deleted." + bcolors.ENDC)
+
 
 # Encypt a string
 def encr(message):
@@ -103,11 +113,13 @@ def encr(message):
     decMessage = fernet.decrypt(encMessage).decode()
     return encMessage
 
+
 # Decrypt a string
 def dencr(encstring):
     fernet = Fernet(TOKEN)
     decstring = fernet.decrypt(encstring).decode()
     return decstring
+
 
 # Menu options
 def Menu():
@@ -120,6 +132,7 @@ def Menu():
     print(bcolors.RED + "\t6- Exit" + bcolors.ENDC)
     menu = input(": ")
     return menu
+
 
 # Print all saved passwords
 def printall():
@@ -144,40 +157,54 @@ def printall():
 
 # Check and get password for a service
 def CheckGetPass(service, hide=1):
-                if not CheckService(service):
-                    print(bcolors.WARNING + "Service doesn't exist.\n" + bcolors.ENDC)
-                    return 0
+        if not CheckService(service):
+            print(bcolors.WARNING + "Service doesn't exist.\n" + bcolors.ENDC)
+            return 0
 
-                passwd = GetPass(service)[0][0]
-                passwd = dencr(passwd)
-                username = GetUser(service)[0][0]
-                username = dencr(username)
-                if not hide:
-                    print(f"Service: {service}\nUsername: {username}\nPassword: {passwd}")
-                    print("-" * 15)
-                pc.copy(passwd)
-                print(bcolors.GREEN + "Copied to clipboard." + bcolors.ENDC)
-                return 1
+        passwd = GetPass(service)[0][0]
+        passwd = dencr(passwd)
+        username = GetUser(service)[0][0]
+        username = dencr(username)
+
+        if not hide:
+            print(f"Service: {service}\nUsername: {username}\nPassword: {passwd}")
+            print("-" * 15)
+        pc.copy(passwd)
+        print(bcolors.GREEN + "Copied to clipboard." + bcolors.ENDC)
+        return 1
 
 
 # Random password
 def genman(pass_len, password_string):
     password = ''
-    for x in range (0,4):
-        Password = random.choice(string.ascii_uppercase) + random.choice(string.ascii_lowercase) + random.choice(string.digits) + random.choice(string.punctuation)
+    for x in range (0, 4):
+        Password = random.choice(string.ascii_uppercase) + \
+                random.choice(string.ascii_lowercase) + \
+                random.choice(string.digits) + \
+                random.choice(string.punctuation)
     for y in range(pass_len - 4):
-        password = password + random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits + string.punctuation)
+        password = password + random.choice(string.ascii_uppercase + \
+                string.ascii_lowercase + \
+                string.digits + \
+                string.punctuation)
 
-    password = password + password_string
+    for z in range(0, 4):
+        password = password + random.choice(password_string)
     return password
 
 # Init the arguments parser
 def arginit():
         parser = argparse.ArgumentParser()
-        parser.add_argument("-s","--service", help="The service you want to get it's password.")
-        parser.add_argument("-u","--unvisable", action="store_true", help="Don't print the results to the terminal.")
+        parser.add_argument("-s",
+                "--service",
+                help="The service you want to get it's password.")
+        parser.add_argument("-u",
+                "--unvisable",
+                action="store_true",
+                help="Don't print the results to the terminal.")
         args = parser.parse_args()
         return args.service, args.unvisable
+
 
 # Main function
 def main():
@@ -187,11 +214,14 @@ def main():
             print("""It is your first time in the passman (:
 Let us get you a master password,
 This is the only password you should remember, and I'll do the other stuff for you.""")
-            masterpasswd = input(bcolors.GREEN + "Enter a password to use it as a master password: " + bcolors.ENDC)
+            masterpasswd = input(bcolors.GREEN + \
+                    "Enter a password to use it as a master password: " + \
+                    bcolors.ENDC)
             connct = sqlite3.connect(DATA_BASE_PATH)
             cur = connct.cursor()
             datatuple = ("masterpasswd", "masterpasswd", masterpasswd)
-            cur.execute(f"""INSERT INTO passwds (SERVICE, USERNAME, PASSWD) VALUES (?,?,?);""",datatuple)
+            cur.execute(f"""INSERT INTO passwds (SERVICE, USERNAME, PASSWD) VALUES (?,?,?);""",
+                    datatuple)
             connct.commit()
             connct.close()
         elif CheckService("masterpasswd"):
