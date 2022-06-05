@@ -3,7 +3,6 @@ A simple python password manager.
 ### Dependencies
 * pyperclip
 * cryptography
-* argparse
 ### Install
 ```
 git clone https://github.com/BishrGhalil/passman.git
