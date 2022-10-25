@@ -72,7 +72,7 @@ def dashboard_menu():
 
     print(logo)
     print(msg)
-    option = input(PROMPT)
+    option = getch()
     return option
 
 
